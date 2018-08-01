@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="web3.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script> -->
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        .core-container{
+            margin: 100px auto;
+        }
+        .row{
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        button{
+            width: 100px;
+            height: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div class="core-container">
+        <div class="row">
+            <h5>奖池总金额</h5>
+            <h4 id="sum">--</h4>
+        </div>
+        <div class="row">
+            <input type="radio" name="type" id="true" value="true" checked />
+            <label for="true">单数</label>
+            <input type="radio" name="type" id="false" value="false" />
+            <label for="false">偶数</label>
+        </div>
+        <div class="row">
+            <h5>投入奖池金额</h5>
+            <input id="num" type="text">
+        </div>
+        <div class="row">
+            <button id="verify">确定</button>
+        </div>
+    </div>
+<script>
+    const ABI = [{"constant":true,"inputs":[],"name":"pool","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_isOdd","type":"bool"}],"name":"core","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"anonymous":false,"inputs":[{"indexed":false,"name":"randomNumber","type":"uint256"},{"indexed":false,"name":"pool","type":"uint256"}],"name":"generateRandom","type":"event"}];
+    var MyContract = web3.eth.contract(ABI);
+    var myContractInstance = MyContract.at('0xe05d6b864b52b9175973eee92632d079029971b3');
+
+
+    $('#verify').click(()=>{
+        var num = $('#num').val();
+        var type = Boolean($("input[name='type']:checked").val());
+        myContractInstance.core.apply(null, [type]).send({value: num});
+    });
+    myContractInstance.allEvents({}, function(err, data){
+        console.log('data', data);
+    });
+
+</script>
+</body>
+</html>
