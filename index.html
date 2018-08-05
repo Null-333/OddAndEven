@@ -33,9 +33,9 @@
             <h4 id="sum">--</h4>
         </div>
         <div class="row">
-            <input type="radio" name="type" id="true" value="true" checked />
+            <input type="radio" name="type" id="1" value="1" checked />
             <label for="true">单数</label>
-            <input type="radio" name="type" id="false" value="false" />
+            <input type="radio" name="type" id="0" value="0" />
             <label for="false">偶数</label>
         </div>
         <div class="row">
@@ -47,20 +47,78 @@
         </div>
     </div>
 <script>
-    const ABI = [{"constant":true,"inputs":[],"name":"pool","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_isOdd","type":"bool"}],"name":"core","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"anonymous":false,"inputs":[{"indexed":false,"name":"randomNumber","type":"uint256"},{"indexed":false,"name":"pool","type":"uint256"}],"name":"generateRandom","type":"event"}];
-    var MyContract = web3.eth.contract(ABI);
-    var myContractInstance = MyContract.at('0xe05d6b864b52b9175973eee92632d079029971b3');
+       //https://segmentfault.com/a/1190000015310963#articleHeader11    how to call metatask
+       //http://cw.hubwiz.com/card/c/web3.js-1.0/1/4/7/    transaction submit事件
+       //http://cw.hubwiz.com/card/c/web3.js-1.0/1/4/13/   events - 订阅合约事件
+       // 检查web3是否已经注入到(Mist/MetaMask)
+    //    let w3Constructor = null;
+       if (typeof web3 !== 'undefined') {
+        // 使用 Mist/MetaMask 的提供者
+            web3js = new Web3(web3.currentProvider);
 
+            // web3js = new Web3( new Web3.providers.WebsocketProvider("wss://mainnet.infura.io/_ws"));
+           // web3js = new Web3(web3.providers.HttpProvider('https://ropsten.infura.io/v3/f329bd0acda54b87875860bdba06515a'));
+        //    web3js = new Web3(new Web3.providers.HttpProvider('https://ropsten.infura.io/v3/f329bd0acda54b87875860bdba06515a'));
+        //    web3js = new Web3(new Web3.providers.WebsocketProvider('wss://mainnet.infura.io/ws'));
+
+            // web3js.setProvider(new Web3.providers.WebsocketProvider('ws://localhost:'));
+            // web3js = new web3( new web3.providers.WebsocketProvider("wss://mainnet.infura.io/_ws"));
+        } else {
+            console.log('Please install the metaMask.');
+
+        }
+
+    const ABI = [{"constant":true,"inputs":[],"name":"pool","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"put","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[{"name":"_isOdd","type":"uint256"}],"name":"core","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"com","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"anonymous":false,"inputs":[{"indexed":false,"name":"randomNumber","type":"uint256"}],"name":"onRandom","type":"event"}];
+    var myContract = new web3js.eth.Contract(ABI, '0x4faC470a59fFF87dA3CbB4CbE52fc9dF96078B50');
 
     $('#verify').click(()=>{
-        var num = $('#num').val();
-        var type = Boolean($("input[name='type']:checked").val());
-        myContractInstance.core.apply(null, [type]).send({value: num});
-    });
-    myContractInstance.allEvents({}, function(err, data){
-        console.log('data', data);
-    });
+        var num = Number($('#num').val()) * 1e18;
+        var val = Number($("input[name='type']:checked").val());
+        debugger;
+        myContract.methods.core(val).send({
+            from: web3.eth.defaultAccount,
+            value: num
+        }).on('transactionHash', function(hash){
+            console.log(hash);
+        })
+        .on('receipt', function(receipt){
+            console.log(receipt);
+        })
+        .on('confirmation', function(confirmationNumber, receipt){
+            console.log(confirmationNumber,receipt);
+        })
+        .on('error', console.error)
+        .on('onRandom', function(randomNumber){
+                console.log(randomNumber);
+         });
 
+        //  myContract.events.onRandom({},function(error, event){
+        //          console.log(event);
+        //      })
+        //     .on('data', function(event){
+        //         console.log(event); // same results as the optional callback above
+        //     })
+        //     .on('changed', function(event){
+        //         // remove event from local database
+        //         console.log(event)
+        //     })
+        //     .on('error', console.error)
+
+        // myContract.allEvents({}, function(err, event){
+        //      console.log(event);
+        // }).on('data', function(event){
+        //         console.log(event); // same results as the optional callback above
+        //     })
+        //     .on('changed', function(event){
+        //         // remove event from local database
+        //         console.log(event)
+        //     })
+        //     .on('error', console.error);
+
+            myContract.events.onRandom({}, function(err, data){
+                     console.log('data', data);
+              });
+    })
 </script>
 </body>
 </html>
